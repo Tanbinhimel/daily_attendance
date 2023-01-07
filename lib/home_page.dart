@@ -10,7 +10,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late String distance = '10000';
+  var distance = '10000';
+  var isLocationMocked = false;
 
   @override
   void initState() {
@@ -20,6 +21,29 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    var distanceUI = Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text('You are', style: GoogleFonts.acme(fontSize: 20)),
+          Text('$distance meter',
+              style: GoogleFonts.acme(
+                  fontSize: 30, color: Colors.red)),
+          Text('away from Truck Lagbe Tech',
+              style: GoogleFonts.acme(fontSize: 20))
+        ]);
+
+    var mockLocationUI = Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text('Sorry Bro!', style: GoogleFonts.acme(
+              fontSize: 30, color: Colors.red)),
+          Text('You Are mocking location!',
+              style: GoogleFonts.acme(
+                  fontSize: 30, color: Colors.red))
+        ]);
+
     return SafeArea(
         child: Scaffold(
             appBar: AppBar(
@@ -29,17 +53,7 @@ class _HomePageState extends State<HomePage> {
             body: Container(
                 margin: const EdgeInsets.all(20),
                 width: double.infinity,
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text('You are', style: GoogleFonts.acme(fontSize: 20)),
-                      Text('$distance meter',
-                          style: GoogleFonts.acme(
-                              fontSize: 30, color: Colors.red)),
-                      Text('away from Truck Lagbe Tech',
-                          style: GoogleFonts.acme(fontSize: 20))
-                    ]))));
+                child: isLocationMocked ? mockLocationUI : distanceUI)));
   }
 
   void setDistanceFromTruckLagbeTech() async {
@@ -50,10 +64,15 @@ class _HomePageState extends State<HomePage> {
     const double minimumDistanceForAPICall = 25;
 
     Geolocator.getPositionStream().listen((event) {
+      if (event.isMocked) {
+        isLocationMocked = true;
+        return;
+      }
       final newDistance = Geolocator.distanceBetween(event.latitude,
-              event.longitude, truckLagbeTechLatitude, truckLagbeTechLongitude)
+          event.longitude, truckLagbeTechLatitude, truckLagbeTechLongitude)
           .round();
       setState(() {
+        isLocationMocked = false;
         distance = newDistance.toString();
       });
 
